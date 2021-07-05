@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model MessageClaim {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  mudaeMessageId String   @unique
+  messageId      String?
+  claims         Claim[]
+}
+
+model Claim {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  mudaeMessageId String
+  metadata       Json?
+  successfull    Boolean  @default(false)
+  claimedAt      DateTime
+  mudaeMessageAt DateTime @default(now())
+
+  MessageClaim   MessageClaim @relation(fields: [messageClaimId], references: [id])
+  messageClaimId Int
+  User           User         @relation(fields: [userId], references: [id])
+  userId         Int
+
+  @@unique([mudaeMessageId, userId], name: "claimPerMessageConstraint")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  discordUserId String   @unique
+  username      String
+  discriminator String
+  claims        Claim[]
+}
